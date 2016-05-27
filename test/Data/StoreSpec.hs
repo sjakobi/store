@@ -8,6 +8,7 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Data.StoreSpec where
 
 import           Control.Applicative
@@ -193,6 +194,17 @@ instance Monad m => Serial m Void where
 
 deriving instance Show NameFlavour
 deriving instance Show NameSpace
+
+newtype AllConstructorsInteger = AllConstructorsInteger Integer
+    deriving (Eq, Show, Num, Store)
+instance Monad m => Serial m AllConstructorsInteger where
+    series =
+        let minInt = fromIntegral (minBound :: Int)
+            maxInt = fromIntegral (maxBound :: Int)
+        in  AllConstructorsInteger <$>
+                series
+                \/ ((minInt -) . getPositive <$> series)
+                \/ ((maxInt +) . getPositive <$> series)
 
 ------------------------------------------------------------------------
 -- Test datatypes for generics support
