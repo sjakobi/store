@@ -63,6 +63,7 @@ import           Control.DeepSeq (NFData)
 import           Control.Exception (throwIO)
 import           Control.Monad (when)
 import           Control.Monad.IO.Class (liftIO)
+import           Data.Bits
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Internal as BS
 import qualified Data.ByteString.Lazy as LBS
@@ -655,7 +656,24 @@ instance Store Utf8 where
                | o <= 0x7ff -> 2
                | o <= 0xffff -> 3
                | otherwise -> 4
-    poke = undefined
+    poke (Utf8 a) | c <= 0x7f     = poke (fromIntegral c :: Word8)
+                  | c <= 0x7ff    = do poke (0xc0 .|. y)
+                                       poke (0x80 .|. z)
+                  | c <= 0xffff   = do poke (0xe0 .|. x)
+                                       poke (0x80 .|. y)
+                                       poke (0x80 .|. z)
+                  | c <= 0x10ffff = do poke (0xf0 .|. w)
+                                       poke (0x80 .|. x)
+                                       poke (0x80 .|. y)
+                                       poke (0x80 .|. z)
+                  | otherwise     = error "Not a valid Unicode code point"
+     where
+        c = ord a
+        z, y, x, w :: Word8
+        z = fromIntegral (c           .&. 0x3f)
+        y = fromIntegral (shiftR c 6  .&. 0x3f)
+        x = fromIntegral (shiftR c 12 .&. 0x3f)
+        w = fromIntegral (shiftR c 18 .&. 0x7)
     peek = undefined
 
 ------------------------------------------------------------------------
