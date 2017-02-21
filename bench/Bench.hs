@@ -13,6 +13,7 @@ import           Control.DeepSeq
 import           Criterion.Main
 import qualified Data.ByteString as BS
 import           Data.Int
+import qualified Data.IntMap as IntMap
 import           Data.Store
 import           Data.Typeable
 import qualified Data.Vector as V
@@ -71,6 +72,11 @@ main = do
                        _ -> error "This does not compute."
                ) <$> V.enumFromTo 1 (100 :: Int)
         nestedTuples = (\i -> ((i,i+1),(i+2,i+3))) <$> V.enumFromTo (1::Int) 100
+        ints = [1..100] :: [Int]
+        pairs = map (\x -> (x, x)) ints
+        strings = show <$> ints
+        intMap = IntMap.fromDistinctAscList pairs
+        stringsIntMap = IntMap.fromDistinctAscList (zip ints strings)
 #endif
     defaultMain
         [ bgroup "encode"
@@ -80,6 +86,8 @@ main = do
             , benchEncode' "10kb storable" (SV.fromList ([1..(256 * 10)] :: [Int32]))
             , benchEncode' "1kb normal" (V.fromList ([1..256] :: [Int32]))
             , benchEncode' "10kb normal" (V.fromList ([1..(256 * 10)] :: [Int32]))
+            , benchEncode intMap
+            , benchEncode stringsIntMap
 #endif
             , benchEncode smallprods
             , benchEncode smallmanualprods
@@ -95,6 +103,8 @@ main = do
             , benchDecode' "10kb storable" (SV.fromList ([1..(256 * 10)] :: [Int32]))
             , benchDecode' "1kb normal" (V.fromList ([1..256] :: [Int32]))
             , benchDecode' "10kb normal" (V.fromList ([1..(256 * 10)] :: [Int32]))
+            , benchDecode intMap
+            , benchDecode stringsIntMap
 #endif
             , benchDecode smallprods
             , benchDecode smallmanualprods
@@ -102,6 +112,10 @@ main = do
             , benchDecode ssms
             , benchDecode nestedTuples
             , benchDecode sds
+            ]
+        , bgroup "size"
+            [ benchSize intMap
+            , benchSize stringsIntMap
             ]
         ]
 
@@ -153,6 +167,15 @@ benchDecode' prefix x0 =
     env (return (encode x0)) $ \x ->
         bench (prefix ++ " (" ++ show (typeOf x0) ++ ")") (nf (decodeEx :: BS.ByteString -> a) x)
 #endif
+
+benchSize :: Ctx a => a -> Benchmark
+benchSize x0 = env (return x0) (bench name . nf getSize)
+  where
+    name = " (" ++ show (typeOf x0) ++ ")"
+    getSize x =
+        case size of
+            VarSize f -> f x
+            ConstSize n -> n
 
 ------------------------------------------------------------------------
 -- Serialized datatypes
