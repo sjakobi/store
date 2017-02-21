@@ -81,6 +81,7 @@ import           Data.HashMap.Strict (HashMap)
 import           Data.HashSet (HashSet)
 import           Data.Hashable (Hashable)
 import           Data.IntMap (IntMap)
+import qualified Data.IntMap.Strict as IntMap
 import           Data.IntSet (IntSet)
 import qualified Data.List.NonEmpty as NE
 import           Data.Map (Map)
@@ -477,7 +478,15 @@ instance Store IntSet where
     {-# INLINE poke #-}
 
 instance Store a => Store (IntMap a) where
-    size = sizeMap
+    size =
+        VarSize $ \im ->
+            intSize +
+            case size of
+                ConstSize na -> (intSize + na) * olength im
+                VarSize fa ->
+                    IntMap.foldl' (\acc a -> acc + fa a + intSize) 0 im
+      where
+        intSize = sizeOf (undefined :: Int)
     poke = pokeMap
     peek = peekMap
     {-# INLINE size #-}
