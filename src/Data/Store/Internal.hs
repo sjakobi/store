@@ -482,7 +482,7 @@ instance Store a => Store (IntMap a) where
         VarSize $ \im ->
             intSize +
             case size of
-                ConstSize na -> (intSize + na) * olength im
+                ConstSize na -> (intSize + na) * IntMap.size im
                 VarSize fa ->
                     IntMap.foldl' (\acc a -> acc + fa a + intSize) 0 im
       where
