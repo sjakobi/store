@@ -10,4 +10,5 @@ extra-deps:
 - mono-traversable-0.10.2
 - dlist-instances-0.1
 - cereal-vector-0.2.0.1
+- containers-0.5.10.1
 allow-newer: true
