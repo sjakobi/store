@@ -1,6 +1,13 @@
-resolver: lts-7.18
+resolver: nightly-2017-02-28
 packages:
 - .
 - store-core
 - location: deps/weigh
   extra-dep: true
+- location:
+    git: https://github.com/haskell/containers
+    commit: f42e9321dc1ba5f3bc58101b6dec9beb43a80a0a
+  extra-dep: true
+extra-deps:
+- criterion-1.1.4.0
+- cassava-0.4.5.1
