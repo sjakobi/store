@@ -6,7 +6,7 @@ packages:
   extra-dep: true
 - location:
     git: https://github.com/sjakobi/containers
-    commit: 53e82d93c7aa58f6a00c2364ffa9dd2dd7b376e9
+    commit: 9612b20
   extra-dep: true
 extra-deps:
 - criterion-1.1.4.0
