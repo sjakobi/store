@@ -5,8 +5,8 @@ packages:
 - location: deps/weigh
   extra-dep: true
 - location:
-    git: https://github.com/haskell/containers
-    commit: f42e9321dc1ba5f3bc58101b6dec9beb43a80a0a
+    git: https://github.com/sjakobi/containers
+    commit: 53e82d93c7aa58f6a00c2364ffa9dd2dd7b376e9
   extra-dep: true
 extra-deps:
 - criterion-1.1.4.0
